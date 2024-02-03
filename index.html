@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intermittent Fasting Timer</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+  #timer {
+    font-size: 1.2em;
+  }
+  #progress-bar {
+    width: 50%;
+    height: 30px;
+    background-color: #f2f2f2;
+    margin: 20px auto;
+    position: relative;
+  }
+  #progress {
+    background-color: #4caf50;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  #progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+  <h1>Intermittent Fasting Timer</h1>
+  <div id="timer">00:00:00 / 12:00:00</div>
+  <div id="progress-bar">
+    <div id="progress"></div>
+    <div id="progress-text">0%</div>
+  </div>
+  <button onclick="startTimer()">Start</button>
+  <button onclick="stopTimer()">Stop</button>
+  <button onclick="resetTimer()">Reset</button>
+
+<script>
+let timerInterval;
+let totalSeconds = 0;
+
+// Load timer state from local storage
+window.onload = function() {
+  let timerRunning = localStorage.getItem('timerRunning');
+  if (timerRunning === 'true') {
+    totalSeconds = parseInt(localStorage.getItem('totalSeconds'));
+    updateProgressBar();
+    startTimer();
+  }
+}
+
+function startTimer() {
+  timerInterval = setInterval(updateTimer, 1000);
+  localStorage.setItem('timerRunning', 'true');
+}
+
+function updateTimer() {
+  totalSeconds++;
+  if (totalSeconds >= 12 * 60 * 60) { // 12 hours in seconds
+    stopTimer();
+    return;
+  }
+  updateProgressBar();
+  updateTimerDisplay();
+}
+
+function updateProgressBar() {
+  let progress = (totalSeconds / (12 * 60 * 60)) * 100; // Percentage completion
+  document.getElementById('progress').style.width = progress + '%';
+  document.getElementById('progress-text').innerText = Math.round(progress) + '%';
+}
+
+function updateTimerDisplay() {
+  let hours = Math.floor(totalSeconds / 3600);
+  let minutes = Math.floor((totalSeconds % 3600) / 60);
+  let seconds = totalSeconds % 60;
+  document.getElementById('timer').innerText = pad(hours) + ':' + pad(minutes) + ':' + pad(seconds) + ' / 12:00:00';
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  localStorage.setItem('timerRunning', 'false');
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  totalSeconds = 0;
+  updateProgressBar();
+  updateTimerDisplay();
+  localStorage.setItem('timerRunning', 'false');
+}
+
+function pad(num) {
+  return num.toString().padStart(2, '0');
+}
+
+// Save timer state to local storage when the page is unloaded
+window.onbeforeunload = function() {
+  localStorage.setItem('totalSeconds', totalSeconds.toString());
+}
+</script>
+</body>
+</html>
